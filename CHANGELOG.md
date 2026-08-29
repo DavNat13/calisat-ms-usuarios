@@ -1,5 +1,13 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.0.1] - 2026-08-28
+
+### Fixed
+- Eliminadas credenciales por defecto en docker-compose.yml (CRIT-001)
+- Eliminadas credenciales por defecto en application.yaml (CRIT-001)
+- Cerrado puerto 5432 de PostgreSQL al host (CRIT-002)
+- Todas las variables sensibles ahora son obligatorias (${VARIABLE} sin fallback)
+
 ## [1.0.0] - 2026-08-28
 
 ### Added
