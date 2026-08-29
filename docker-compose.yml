@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: calisat-db-usuarios
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-calisat_usuarios}
+      POSTGRES_USER: ${POSTGRES_USER:-calisat_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-calisat_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - calisat_usuarios_data:/var/lib/postgresql/data
+    networks:
+      - calisat-usuarios-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-calisat_admin} -d ${POSTGRES_DB:-calisat_usuarios}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: calisat-ms-usuarios
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-calisat_usuarios}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-calisat_admin}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-calisat_pass}
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:-https://login.microsoftonline.com/}
+      JWT_TENANT_ID: ${JWT_TENANT_ID:-e5372bf0-c5e3-4286-887c-79069f209c1f}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - calisat-usuarios-net
+
+networks:
+  calisat-usuarios-net:
+    driver: bridge
+
+volumes:
+  calisat_usuarios_data:
