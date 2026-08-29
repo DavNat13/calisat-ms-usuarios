@@ -2,12 +2,12 @@ spring:
   application:
     name: calisat-ms-usuarios
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE}
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/calisat_usuarios}
-    username: ${SPRING_DATASOURCE_USERNAME:calisat_admin}
-    password: ${SPRING_DATASOURCE_PASSWORD:calisat_pass}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -23,8 +23,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/}
-          tenant-id: ${JWT_TENANT_ID:e5372bf0-c5e3-4286-887c-79069f209c1f}
+          issuer-uri: ${JWT_ISSUER_URI}
+          tenant-id: ${JWT_TENANT_ID}
 
 server:
   port: 8080
