@@ -1,5 +1,10 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.0.2] - 2026-08-28
+
+### Fixed
+- Corregido error de tipado generico en UsuarioController (ResponseEntity<Map<String, Object>>)
+
 ## [1.0.1] - 2026-08-28
 
 ### Fixed
