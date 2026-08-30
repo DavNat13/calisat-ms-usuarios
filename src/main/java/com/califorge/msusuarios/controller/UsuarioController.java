@@ -54,13 +54,13 @@ public class UsuarioController {
         String nuevoNombre = body.get("nombreCompleto");
 
         return usuarioService.actualizarNombre(azureSub, nuevoNombre)
-                .map(perfil -> ResponseEntity.ok(Map.of(
+                .map(perfil -> ResponseEntity.ok(Map.<String, Object>of(
                         "id", perfil.getId().toString(),
                         "azureSub", perfil.getAzureSub(),
                         "email", perfil.getEmail(),
                         "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
                         "mensaje", "Perfil actualizado correctamente"
                 )))
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.<Map<String, Object>>notFound().build());
     }
 }
