@@ -18,22 +18,20 @@ public class UsuarioService {
     }
 
     /**
-     * Busca un perfil por azureSub. Si no existe, lo crea automaticamente
-     * con los datos basicos del token JWT de Azure AD.
+     * Registra un usuario. Si ya existe, retorna el perfil existente.
+     * Si no existe, lo crea con los datos del JWT.
      */
-    public UsuarioProfile buscarOrCreate(String azureSub, String email, String nombreCompleto) {
+    public UsuarioProfile registrarUsuario(String azureSub, String email, String nombreCompleto) {
         Optional<UsuarioProfile> existente = usuarioProfileRepository.findByAzureSub(azureSub);
-
         if (existente.isPresent()) {
             return existente.get();
         }
-
         UsuarioProfile nuevo = new UsuarioProfile(azureSub, email, nombreCompleto);
         return usuarioProfileRepository.save(nuevo);
     }
 
     /**
-     * Busca un perfil por azureSub.
+     * Busca un perfil por azureSub. Retorna Optional vacío si no existe.
      */
     @Transactional(readOnly = true)
     public Optional<UsuarioProfile> buscarPorAzureSub(String azureSub) {
@@ -47,6 +45,17 @@ public class UsuarioService {
         return usuarioProfileRepository.findByAzureSub(azureSub)
                 .map(usuario -> {
                     usuario.setNombreCompleto(nuevoNombre);
+                    return usuarioProfileRepository.save(usuario);
+                });
+    }
+
+    /**
+     * Baja lógica: cambia el estado activo a false.
+     */
+    public Optional<UsuarioProfile> darDeBaja(String azureSub) {
+        return usuarioProfileRepository.findByAzureSub(azureSub)
+                .map(usuario -> {
+                    usuario.setActivo(false);
                     return usuarioProfileRepository.save(usuario);
                 });
     }

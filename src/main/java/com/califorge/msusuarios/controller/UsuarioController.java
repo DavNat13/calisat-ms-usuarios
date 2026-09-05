@@ -20,30 +20,59 @@ public class UsuarioController {
     }
 
     /**
-     * GET /api/v1/usuarios/perfil
-     * Extrae el claim "sub" del JWT de Azure AD y retorna/crea el perfil.
+     * POST /api/v1/usuarios/registro
+     * Registra el usuario desde el JWT. 201 si es nuevo, 200 si ya existía.
      */
-    @GetMapping("/perfil")
-    public ResponseEntity<Map<String, Object>> obtenerPerfil(@AuthenticationPrincipal Jwt jwt) {
+    @PostMapping("/registro")
+    public ResponseEntity<Map<String, Object>> registrar(
+            @AuthenticationPrincipal Jwt jwt) {
+
         String azureSub = jwt.getSubject();
         String email = jwt.getClaimAsString("email");
         String nombre = jwt.getClaimAsString("name");
 
-        UsuarioProfile perfil = usuarioService.buscarOrCreate(azureSub, email, nombre);
+        boolean existia = usuarioService.buscarPorAzureSub(azureSub).isPresent();
+        UsuarioProfile perfil = usuarioService.registrarUsuario(azureSub, email, nombre);
 
-        return ResponseEntity.ok(Map.of(
+        Map<String, Object> response = Map.of(
                 "id", perfil.getId().toString(),
                 "azureSub", perfil.getAzureSub(),
                 "email", perfil.getEmail(),
                 "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
                 "fechaRegistro", perfil.getFechaRegistro().toString(),
                 "activo", perfil.getActivo()
-        ));
+        );
+
+        return existia
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.status(201).body(response);
+    }
+
+    /**
+     * GET /api/v1/usuarios/perfil
+     * Busca el perfil por sub del JWT. 404 si no existe.
+     */
+    @GetMapping("/perfil")
+    public ResponseEntity<Map<String, Object>> obtenerPerfil(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String azureSub = jwt.getSubject();
+
+        return usuarioService.buscarPorAzureSub(azureSub)
+                .map(perfil -> ResponseEntity.ok(Map.<String, Object>of(
+                        "id", perfil.getId().toString(),
+                        "azureSub", perfil.getAzureSub(),
+                        "email", perfil.getEmail(),
+                        "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
+                        "fechaRegistro", perfil.getFechaRegistro().toString(),
+                        "activo", perfil.getActivo()
+                )))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
      * PUT /api/v1/usuarios/perfil
-     * Actualiza el nombre completo del perfil.
+     * Actualiza nombre completo. 404 si no existe.
      */
     @PutMapping("/perfil")
     public ResponseEntity<Map<String, Object>> actualizarPerfil(
@@ -61,6 +90,21 @@ public class UsuarioController {
                         "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
                         "mensaje", "Perfil actualizado correctamente"
                 )))
-                .orElse(ResponseEntity.<Map<String, Object>>notFound().build());
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * DELETE /api/v1/usuarios/perfil
+     * Baja lógica (activo=false). 204 si ok, 404 si no existe.
+     */
+    @DeleteMapping("/perfil")
+    public ResponseEntity<Void> eliminarPerfil(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String azureSub = jwt.getSubject();
+
+        return usuarioService.darDeBaja(azureSub)
+                .map(perfil -> ResponseEntity.noContent().<Void>build())
+                .orElse(ResponseEntity.notFound().build());
     }
 }

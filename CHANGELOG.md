@@ -1,5 +1,16 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.1.0] - 2026-09-04
+
+### Added
+- Endpoint POST /api/v1/usuarios/registro (201 Created o 200 OK si ya existía)
+- Endpoint DELETE /api/v1/usuarios/perfil (baja lógica, 204 No Content)
+
+### Changed
+- Refactorizado GET /api/v1/usuarios/perfil: ya no hace JIT provisioning, retorna 404 si no existe
+- Refactorizado PUT /api/v1/usuarios/perfil: retorna 404 si el perfil no existe
+- UsuarioService: métodos separados registrarUsuario, buscarPorAzureSub, actualizarNombre, darDeBaja
+
 ## [1.0.2] - 2026-08-28
 
 ### Fixed
@@ -14,6 +25,8 @@
 - Todas las variables sensibles ahora son obligatorias (${VARIABLE} sin fallback)
 
 ## [1.0.0] - 2026-08-28
+
+[1.1.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.2...v1.1.0
 
 ### Added
 - Microservicio calisat-ms-usuarios con Spring Boot 4.1.0 y Java 21
