@@ -33,7 +33,7 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
-                .withJwkSetUri(ISSUER_URI + "/discovery/v2.0/keys")
+                .withIssuerLocation(ISSUER_URI)
                 .build();
 
         OAuth2TokenValidator<Jwt> issuerValidator =
