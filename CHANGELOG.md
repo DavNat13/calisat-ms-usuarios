@@ -1,5 +1,13 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.1.2] - 2026-09-05
+
+### Fixed
+- Corregido bug crítico: `setJwtValidator` sobrescribía validación de issuer con audience
+- Implementado `DelegatingOAuth2TokenValidator` para combinar issuer + audience validators
+- Hardcodeado todos los valores de configuración (modo académico)
+- Versión pom.xml actualizada a 1.1.2
+
 ## [1.1.1] - 2026-09-05
 
 ### Fixed
@@ -34,6 +42,7 @@
 
 ## [1.0.0] - 2026-08-28
 
+[1.1.2]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.2...v1.1.0
 

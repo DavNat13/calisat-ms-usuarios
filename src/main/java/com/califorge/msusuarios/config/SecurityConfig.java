@@ -2,11 +2,11 @@ package com.califorge.msusuarios.config;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -21,27 +21,31 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
+    private static final String ISSUER_URI =
+            "https://login.microsoftonline.com/e5372bf0-c5e3-4286-887c-79069f209c1f/v2.0";
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
-    private String expectedAudience;
+    private static final String EXPECTED_AUDIENCE =
+            "d221f0d2-1a7c-4872-ad6c-367a1f0717ec";
 
-    @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173}")
-    private String allowedOrigins;
+    private static final String ALLOWED_ORIGIN =
+            "https://ezeh839whh.execute-api.us-east-1.amazonaws.com";
 
     @Bean
     public JwtDecoder jwtDecoder() {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
-                .withJwkSetUri(issuerUri + "/discovery/v2.0/keys")
+                .withJwkSetUri(ISSUER_URI + "/discovery/v2.0/keys")
                 .build();
 
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(
-                List.of(expectedAudience)
-        );
+        OAuth2TokenValidator<Jwt> issuerValidator =
+                JwtValidators.createDefaultWithIssuer(ISSUER_URI);
 
-        jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
-        jwtDecoder.setJwtValidator(audienceValidator);
+        OAuth2TokenValidator<Jwt> audienceValidator =
+                new AudienceValidator(List.of(EXPECTED_AUDIENCE));
+
+        OAuth2TokenValidator<Jwt> delegatingValidator =
+                new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator);
+
+        jwtDecoder.setJwtValidator(delegatingValidator);
 
         return jwtDecoder;
     }
@@ -49,7 +53,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        config.setAllowedOrigins(List.of(ALLOWED_ORIGIN));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
