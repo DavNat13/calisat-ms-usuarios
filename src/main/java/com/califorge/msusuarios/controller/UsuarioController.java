@@ -29,6 +29,9 @@ public class UsuarioController {
 
         String azureSub = jwt.getSubject();
         String email = jwt.getClaimAsString("email");
+        if (email == null || email.isBlank()) {
+            email = jwt.getClaimAsString("preferred_username");
+        }
         String nombre = jwt.getClaimAsString("name");
 
         boolean existia = usuarioService.buscarPorAzureSub(azureSub).isPresent();

@@ -1,5 +1,12 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.1.4] - 2026-09-05
+
+### Fixed
+- Agregado fallback hacia claim `preferred_username` cuando `email` es nulo
+- Corregido error 500 por ConstraintViolationException en email obligatorio
+- Versión pom.xml actualizada a 1.1.4
+
 ## [1.1.3] - 2026-09-05
 
 ### Fixed
@@ -49,6 +56,7 @@
 
 ## [1.0.0] - 2026-08-28
 
+[1.1.4]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.0...v1.1.1
