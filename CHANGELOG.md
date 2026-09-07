@@ -1,5 +1,13 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.1.1] - 2026-09-05
+
+### Fixed
+- Corregido error 401 Unauthorized en endpoint POST /registro
+- Agregado `AudienceValidator` para validar claim `aud` del JWT
+- Configurado `issuer-uri` correctamente con URI completo de Azure AD
+- Agregada variable `JWT_AUDIENCE` en docker-compose.yml y application.yaml
+
 ## [1.1.0] - 2026-09-04
 
 ### Added
@@ -26,6 +34,7 @@
 
 ## [1.0.0] - 2026-08-28
 
+[1.1.1]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.2...v1.1.0
 
 ### Added

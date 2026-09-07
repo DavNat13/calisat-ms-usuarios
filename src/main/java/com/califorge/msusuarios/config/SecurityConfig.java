@@ -7,7 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -21,16 +24,25 @@ public class SecurityConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.tenant-id}")
-    private String tenantId;
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
+    private String expectedAudience;
 
     @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173}")
     private String allowedOrigins;
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        String jwkSetUri = issuerUri + tenantId + "/discovery/v2.0/keys";
-        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
+                .withJwkSetUri(issuerUri + "/discovery/v2.0/keys")
+                .build();
+
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(
+                List.of(expectedAudience)
+        );
+
+        jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
+        jwtDecoder.setJwtValidator(audienceValidator);
+
         return jwtDecoder;
     }
 
