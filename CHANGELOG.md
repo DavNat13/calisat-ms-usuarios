@@ -16,6 +16,8 @@
 - Oculto el token JWT de la respuesta del endpoint `GET /perfil` (campo `token` eliminado)
 - Versión pom.xml actualizada a 1.1.6
 
+> Nota: el asunto del commit `d2fa752` indica erróneamente "v1.1.1"; la versión real de esta release es 1.1.6 (la 1.1.1 corresponde al commit `0224ee8`).
+
 ## [1.1.5] - 2026-09-05
 
 ### Added
@@ -78,15 +80,6 @@
 
 ## [1.0.0] - 2026-08-28
 
-[1.2.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.6...v1.2.0
-[1.1.6]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.5...v1.1.6
-[1.1.5]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.4...v1.1.5
-[1.1.4]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.3...v1.1.4
-[1.1.3]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.2...v1.1.3
-[1.1.2]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.1...v1.1.2
-[1.1.1]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.0...v1.1.1
-[1.1.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.2...v1.1.0
-
 ### Added
 - Microservicio calisat-ms-usuarios con Spring Boot 4.1.0 y Java 21
 - Docker Compose con PostgreSQL 15 y app Spring Boot
@@ -97,3 +90,15 @@
 - SecurityConfig para validacion JWT de Azure AD
 - Configuracion via variables de entorno (cero archivos .env)
 - Health check via Spring Actuator
+
+[1.2.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.6...v1.2.0
+[1.1.6]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.5...v1.1.6
+[1.1.5]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.4...v1.1.5
+[1.1.4]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.3...v1.1.4
+[1.1.3]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.2...v1.1.0
+[1.0.2]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/DavNat13/calisat-ms-usuarios/releases/tag/v1.0.0
