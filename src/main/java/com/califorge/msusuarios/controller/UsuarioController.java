@@ -68,8 +68,7 @@ public class UsuarioController {
                         "email", perfil.getEmail(),
                         "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
                         "fechaRegistro", perfil.getFechaRegistro().toString(),
-                        "activo", perfil.getActivo(),
-                        "token", jwt.getTokenValue()
+                        "activo", perfil.getActivo()
                 )))
                 .orElse(ResponseEntity.notFound().build());
     }

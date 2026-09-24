@@ -1,5 +1,11 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.1.6] - 2026-09-23
+
+### Fixed
+- Oculto el token JWT de la respuesta del endpoint `GET /perfil` (campo `token` eliminado)
+- Versión pom.xml actualizada a 1.1.6
+
 ## [1.1.5] - 2026-09-05
 
 ### Added
@@ -62,6 +68,7 @@
 
 ## [1.0.0] - 2026-08-28
 
+[1.1.6]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.2...v1.1.3
