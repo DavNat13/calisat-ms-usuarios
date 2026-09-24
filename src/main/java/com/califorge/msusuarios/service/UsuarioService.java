@@ -18,15 +18,21 @@ public class UsuarioService {
     }
 
     /**
-     * Registra un usuario. Si ya existe, retorna el perfil existente.
-     * Si no existe, lo crea con los datos del JWT.
+     * Registra un usuario. Si ya existe, retorna el perfil existente
+     * (sincronizando el rol). Si no existe, lo crea con los datos del JWT.
      */
-    public UsuarioProfile registrarUsuario(String azureSub, String email, String nombreCompleto) {
+    public UsuarioProfile registrarUsuario(String azureSub, String email, String nombreCompleto, String rol) {
         Optional<UsuarioProfile> existente = usuarioProfileRepository.findByAzureSub(azureSub);
         if (existente.isPresent()) {
-            return existente.get();
+            UsuarioProfile perfil = existente.get();
+            if (rol != null && !rol.equals(perfil.getRol())) {
+                perfil.setRol(rol);
+                return usuarioProfileRepository.save(perfil);
+            }
+            return perfil;
         }
         UsuarioProfile nuevo = new UsuarioProfile(azureSub, email, nombreCompleto);
+        nuevo.setRol(rol);
         return usuarioProfileRepository.save(nuevo);
     }
 

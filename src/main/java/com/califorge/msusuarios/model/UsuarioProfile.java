@@ -36,6 +36,9 @@ public class UsuarioProfile {
     @Column(nullable = false)
     private Boolean activo = true;
 
+    @Column(name = "rol", length = 32)
+    private String rol;
+
     @OneToMany(mappedBy = "usuarioProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<DireccionEnvio> direcciones = new java.util.ArrayList<>();
 
@@ -71,6 +74,9 @@ public class UsuarioProfile {
 
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }
+
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
 
     public java.util.List<DireccionEnvio> getDirecciones() { return direcciones; }
     public void setDirecciones(java.util.List<DireccionEnvio> direcciones) { this.direcciones = direcciones; }

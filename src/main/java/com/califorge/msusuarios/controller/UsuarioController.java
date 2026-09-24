@@ -33,9 +33,10 @@ public class UsuarioController {
             email = jwt.getClaimAsString("preferred_username");
         }
         String nombre = jwt.getClaimAsString("name");
+        String rol = extraerRol(jwt);
 
         boolean existia = usuarioService.buscarPorAzureSub(azureSub).isPresent();
-        UsuarioProfile perfil = usuarioService.registrarUsuario(azureSub, email, nombre);
+        UsuarioProfile perfil = usuarioService.registrarUsuario(azureSub, email, nombre, rol);
 
         Map<String, Object> response = Map.of(
                 "id", perfil.getId().toString(),
@@ -43,12 +44,31 @@ public class UsuarioController {
                 "email", perfil.getEmail(),
                 "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
                 "fechaRegistro", perfil.getFechaRegistro().toString(),
-                "activo", perfil.getActivo()
+                "activo", perfil.getActivo(),
+                "rol", perfil.getRol() != null ? perfil.getRol() : ""
         );
 
         return existia
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.status(201).body(response);
+    }
+
+    /**
+     * Extrae el primer rol del claim "roles" del JWT de Azure Entra ID.
+     */
+    private String extraerRol(Jwt jwt) {
+        Object roles = jwt.getClaim("roles");
+        if (roles instanceof java.util.Collection<?> coleccion) {
+            return coleccion.stream()
+                    .filter(obj -> obj != null && !obj.toString().isBlank())
+                    .findFirst()
+                    .map(Object::toString)
+                    .orElse(null);
+        }
+        if (roles instanceof String texto && !texto.isBlank()) {
+            return texto;
+        }
+        return null;
     }
 
     /**
@@ -68,7 +88,8 @@ public class UsuarioController {
                         "email", perfil.getEmail(),
                         "nombreCompleto", perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
                         "fechaRegistro", perfil.getFechaRegistro().toString(),
-                        "activo", perfil.getActivo()
+                        "activo", perfil.getActivo(),
+                        "rol", perfil.getRol() != null ? perfil.getRol() : ""
                 )))
                 .orElse(ResponseEntity.notFound().build());
     }
