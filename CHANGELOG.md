@@ -1,5 +1,17 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.3.0] - 2026-09-24
+
+### Added
+- RBAC con Azure Entra ID: bean `JwtAuthenticationConverter` que extrae el claim `roles` del JWT con prefijo `ROLE_` (normalizado a mayúsculas)
+- Perfil y direcciones (`/api/v1/usuarios/**`) restringidos a `CLIENTE`; `POST /registro` permanece autenticado para cualquier rol; `/actuator/**` público
+- Nuevo campo `rol` en `usuario_perfil` persistido desde el claim `roles` del JWT durante `POST /registro` (también se sincroniza en registros existentes)
+- Respuesta de `POST /registro` y `GET /perfil` incluye el campo `rol`
+- Productor RabbitMQ: dependencia `spring-boot-starter-amqp`, exchange `calisat.exchange`, `RabbitTemplate` con `Jackson2JsonMessageConverter`
+- `POST /registro` publica un `RegistroMensaje` (identificador, nombre, email) en `usuario.registrado` cuando se crea un usuario nuevo
+- Configuración RabbitMQ en `application.yaml` (localhost:5672, guest/guest)
+- Versión pom.xml actualizada a 1.3.0
+
 ## [1.2.0] - 2026-09-23
 
 ### Added
@@ -91,6 +103,7 @@
 - Configuracion via variables de entorno (cero archivos .env)
 - Health check via Spring Actuator
 
+[1.3.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.6...v1.2.0
 [1.1.6]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/DavNat13/calisat-ms-usuarios/compare/v1.1.4...v1.1.5

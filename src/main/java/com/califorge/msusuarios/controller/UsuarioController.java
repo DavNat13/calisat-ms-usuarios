@@ -1,7 +1,9 @@
 package com.califorge.msusuarios.controller;
 
+import com.califorge.msusuarios.dto.RegistroMensaje;
 import com.califorge.msusuarios.model.UsuarioProfile;
 import com.califorge.msusuarios.service.UsuarioService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -14,14 +16,17 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final RabbitTemplate rabbitTemplate;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, RabbitTemplate rabbitTemplate) {
         this.usuarioService = usuarioService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     /**
      * POST /api/v1/usuarios/registro
      * Registra el usuario desde el JWT. 201 si es nuevo, 200 si ya existía.
+     * Si es nuevo, publica un evento de registro en RabbitMQ (calisat.exchange).
      */
     @PostMapping("/registro")
     public ResponseEntity<Map<String, Object>> registrar(
@@ -37,6 +42,14 @@ public class UsuarioController {
 
         boolean existia = usuarioService.buscarPorAzureSub(azureSub).isPresent();
         UsuarioProfile perfil = usuarioService.registrarUsuario(azureSub, email, nombre, rol);
+
+        if (!existia) {
+            rabbitTemplate.convertAndSend(
+                    new RegistroMensaje(
+                            perfil.getId().toString(),
+                            perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
+                            perfil.getEmail()));
+        }
 
         Map<String, Object> response = Map.of(
                 "id", perfil.getId().toString(),

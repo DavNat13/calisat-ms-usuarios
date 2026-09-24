@@ -13,7 +13,7 @@
 
     <groupId>com.califorge</groupId>
     <artifactId>calisat-ms-usuarios</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <name>calisat-ms-usuarios</name>
     <description>Microservicio de usuarios y perfiles - Calisat</description>
 
@@ -80,6 +80,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- RabbitMQ (productor de eventos de registro) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
         <!-- Test -->
