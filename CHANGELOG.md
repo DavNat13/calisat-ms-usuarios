@@ -1,5 +1,20 @@
 # Changelog - calisat-ms-usuarios
 
+## [1.4.0] - 2026-09-28
+
+### Added
+- Autenticación dual: `MultiIssuerJwtDecoder` enruta cada JWT por el claim `iss` a un `NimbusJwtDecoder` propio (Azure Entra ID o AWS Cognito); un issuer no registrado se rechaza con 401
+- `JwtDecoderConfig` construye un decoder por proveedor (JWK Set, fechas, issuer y audience) y falla al arrancar si `app.security.jwt.providers` viene vacío
+- `JwtProviderProperties` (`@ConfigurationProperties` sobre `app.security.jwt`) con `name`, `jwk-set-uri`, `issuers`, `audiences` y `default-role` por proveedor
+- `CalisatJwtAuthenticationConverter`: roles de Entra ID desde el claim `roles`, roles de Cognito desde `cognito:groups` y **rol por defecto `ROLE_CLIENTE` para cualquier token de Cognito**
+- `JwtClaims` con lectura defensiva de claims que pueden venir como String o como lista
+- `AudienceValidator` ampliado para aceptar el claim `client_id` (access token de Cognito) además de `aud`
+
+### Changed
+- `SecurityConfig` reducido al filter chain, CORS y reglas de autorización (mismas rutas y mismo origen permitido que en 1.3.0); los beans se inyectan por parámetros del `@Bean` para evitar el ciclo de dependencias
+- `application.yaml`: se conservan `spring.security.oauth2.resourceserver.jwt.issuer-uri` y `audience` y se añade la configuración multi-emisor `app.security.jwt.providers`
+- Versión pom.xml actualizada a 1.4.0
+
 ## [1.3.0] - 2026-09-24
 
 ### Added
