@@ -1,8 +1,8 @@
 # calisat-ms-usuarios
 
-> Microservicio Spring Boot de perfiles y direcciones de envío: registro desde el JWT de Entra ID, gestión del perfil propio y CRUD de direcciones.
+> Microservicio Spring Boot de perfiles y direcciones de envío: registro desde el JWT de Microsoft Entra ID o AWS Cognito, gestión del perfil propio y CRUD de direcciones.
 
-![Versión](https://img.shields.io/badge/version-1.2.0-2563EB)
+![Versión](https://img.shields.io/badge/version-1.4.0-2563EB)
 ![Java](https://img.shields.io/badge/Java-21-F89820?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?logo=spring&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)
@@ -32,9 +32,9 @@
 
 ## 📋 Descripción general
 
-**calisat-ms-usuarios** administra el **perfil de usuario** y sus **direcciones de envío** en la plataforma Calisat. El usuario no se crea con un formulario: se **registra a partir del JWT** de Microsoft Entra ID (`sub`, `email`/`preferred_username`, `name`), de modo que el frontend solo invoca `POST /api/v1/usuarios/registro` tras el inicio de sesión (lo hace automáticamente `useUserSync`).
+**calisat-ms-usuarios** administra el **perfil de usuario** y sus **direcciones de envío** en la plataforma Calisat. El usuario no se crea con un formulario: se **registra a partir del JWT** (`sub`, `email`/`preferred_username`, `name`), de modo que el frontend solo invoca `POST /api/v1/usuarios/registro` tras el inicio de sesión (lo hace automáticamente `useUserSync` con sesión de Azure).
 
-Toda la API está **scopeada por el `sub` del JWT**: cada usuario solo ve y modifica su propio perfil y sus propias direcciones. No hay roles ni RBAC (*modo académico*).
+Toda la API está **scopeada por el `sub` del JWT**: cada usuario solo ve y modifica su propio perfil y sus propias direcciones. Además existe **RBAC básico**: `/api/v1/usuarios/**` exige el rol `CLIENTE`, que se asigna desde el token (ver §Seguridad).
 
 ## ✨ Características principales
 
@@ -45,6 +45,7 @@ Toda la API está **scopeada por el `sub` del JWT**: cada usuario solo ve y modi
 - 🧩 **`GlobalExceptionHandler`**: manejo global de validación, JSON malformado, 404 e integridad.
 - 🩺 **Actuator** (`/actuator/**` público) para health checks.
 - 🔑 **Validación de audience** con `AudienceValidator` + JJWT (`jjwt` 0.11.5) disponible en el classpath.
+- 🔐 **Autenticación dual**: `MultiIssuerJwtDecoder` valida tokens de **Microsoft Entra ID** y **AWS Cognito** en el mismo resource server, con rol por defecto `CLIENTE` para los de Cognito.
 - 🐳 **Docker multi-stage** con usuario no root y health check.
 
 ## 🏗️ Arquitectura
@@ -91,10 +92,18 @@ Valores de `src/main/resources/application.yaml` y `docker-compose.yml`:
 | Host de BD (local) | `postgres:5432` (en Compose, servicio `postgres`) |
 | Usuario / contraseña BD | `postgres` / `postgres` *(solo académico)* |
 | `ddl-auto` | `update` |
-| JWT *issuer* | `https://login.microsoftonline.com/e5372bf0-c5e3-4286-887c-79069f209c1f/v2.0` |
-| JWT *audience* | `d221f0d2-1a7c-4872-ad6c-367a1f0717ec` |
+| JWT *issuer* (Azure) | `https://login.microsoftonline.com/e5372bf0-c5e3-4286-887c-79069f209c1f/v2.0` |
+| JWT *audience* (Azure) | `d221f0d2-1a7c-4872-ad6c-367a1f0717ec` |
+| JWT *issuer* (Cognito) | `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_UK0Q6EmAQ` |
+| JWT *audience* (Cognito) | `79rbb9f5e2l5nmak9d17ueb2se` (aceptado también en `client_id`) |
+| Rol por defecto de Cognito | `CLIENTE` (`default-role` en `app.security.jwt.providers`) |
 | Rutas públicas | `/api/v1/public/**`, `/actuator/**` |
 | Actuator | `health`, `info` |
+
+> La autenticación dual se declara en `app.security.jwt.providers`
+> (`application.yaml`): un proveedor por emisor con su JWK Set, sus `iss`,
+> sus `aud` admitidos y su `default-role`. `MultiIssuerJwtDecoder` elige el
+> decoder a partir del claim `iss` de cada token.
 
 > ⚠️ **Modo académico**: issuer, audience y credenciales de BD están **hardcodeados** a propósito; en producción deben externalizarse.
 
@@ -189,9 +198,12 @@ curl -X POST http://localhost:8081/api/v1/usuarios/perfil/direcciones \
 
 ## 🔒 Seguridad
 
-- **JWT (OAuth2 Resource Server)** de **Microsoft Entra ID**: validación de *issuer* + `AudienceValidator` (`DelegatingOAuth2TokenValidator`).
-- **Sin RBAC**: un único nivel autenticado; **usuario genérico** — cada petición se scopea con `jwt.getSubject()` (*modo académico*).
-- **Rutas públicas**: `/api/v1/public/**` y `/actuator/**`; el resto exige token.
+- **JWT (OAuth2 Resource Server) multi-emisor**: `MultiIssuerJwtDecoder` lee el claim `iss` (sin verificar la firma) solo para enrutar el token a su decoder, y **cada decoder valida firma, fechas, issuer y audience** — un `iss` no registrado se rechaza con `401`.
+- **Proveedores admitidos**: Microsoft Entra ID y AWS Cognito, declarados en `app.security.jwt.providers` (JWK Set + `iss` + `aud` por proveedor). `AudienceValidator` acepta el claim `aud` **o** `client_id` (el access token de Cognito pone el *client id* en `client_id`).
+- **Asignación de roles** (`CalisatJwtAuthenticationConverter`, prefijo `ROLE_` en mayúsculas):
+  - token de **Entra ID** → claim `roles`;
+  - token de **Cognito** → `cognito:groups` si existe y, **siempre**, el rol por defecto `CLIENTE` (sin este fallback el access token de Cognito llegaría sin autoridades y la API devolvería `403`).
+- **Rutas públicas**: `/api/v1/public/**` y `/actuator/**`; `/api/v1/usuarios/**` exige `CLIENTE` y el resto, token.
 - **CSRF deshabilitado** (API stateless con Bearer) · **CORS** restringido al origen del despliegue.
 - El token **nunca se devuelve** en las respuestas del API (regresión corregida en v1.1.6).
 
@@ -242,7 +254,7 @@ Levanta PostgreSQL 15 (`calisat_usuarios`, volumen `calisat_usuarios_data`, red 
 
 ## 📄 Licencia y modo académico
 
-Proyecto desarrollado en **modo académico**; sin licencia open source formal. Issuer, audience y credenciales de BD están *hardcodeados* con fines educativos; no hay RBAC (usuario genérico autenticado).
+Proyecto desarrollado en **modo académico**; sin licencia open source formal. Issuer, audience y credenciales de BD están *hardcodeados* con fines educativos; el RBAC se limita al rol `CLIENTE` y al rol por defecto de Cognito.
 
-- **Versión actual**: `1.2.0`
+- **Versión actual**: `1.4.0`
 - **Historial de cambios**: [`CHANGELOG.md`](CHANGELOG.md)
