@@ -15,6 +15,9 @@ import java.util.Map;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
 
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(UsuarioController.class);
+
     private final UsuarioService usuarioService;
     private final RabbitTemplate rabbitTemplate;
 
@@ -44,11 +47,16 @@ public class UsuarioController {
         UsuarioProfile perfil = usuarioService.registrarUsuario(azureSub, email, nombre, rol);
 
         if (!existia) {
-            rabbitTemplate.convertAndSend(
-                    new RegistroMensaje(
-                            perfil.getId().toString(),
-                            perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
-                            perfil.getEmail()));
+            try {
+                rabbitTemplate.convertAndSend(
+                        new RegistroMensaje(
+                                perfil.getId().toString(),
+                                perfil.getNombreCompleto() != null ? perfil.getNombreCompleto() : "",
+                                perfil.getEmail()));
+            } catch (RuntimeException e) {
+                // Best-effort: el alta del usuario ya esta persistida; no se pierde por el broker.
+                log.warn("No se pudo publicar 'usuario.registrado' en RabbitMQ: {}", e.getMessage());
+            }
         }
 
         Map<String, Object> response = Map.of(
