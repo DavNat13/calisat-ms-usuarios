@@ -1,5 +1,17 @@
 # Changelog - calisat-ms-usuarios
 
+## [2.0.0] - 2026-11-18
+
+### Changed
+- **BREAKING**: `RabbitConfig` declara `calisat.exchange` como `TopicExchange` (antes `DirectExchange`). Los bindings y colas declarados con el tipo anterior deben recrearse antes de desplegar
+- `application.yaml`: el broker se configura por entorno (`SPRING_RABBITMQ_HOST/PORT/USERNAME/PASSWORD`) con `publisher-confirm-type: correlated` y `publisher-returns: true`; el valor por defecto apunta a las credenciales del clúster de `calisat-infra`
+
+### Fixed
+- El alta de usuario ya no se pierde si falla la publicación de `usuario.registrado`: la excepción del broker se registra en log y la respuesta sigue siendo correcta
+- CORS admite la cabecera `Idempotency-Key`
+- `docker-compose.yml` usa la red `calisat-net` y el broker del clúster; se reactiva el health de RabbitMQ
+- Versión pom.xml actualizada a 2.0.0
+
 ## [1.4.0] - 2026-09-28
 
 ### Added
